@@ -262,7 +262,7 @@ describe('DestinationRow', () => {
     expect(await screen.findByText('Stopped')).toBeInTheDocument()
   })
 
-  test('shows warning icon when tables have replication errors', async () => {
+  test('shows table errors in the subtext and on the logo when tables have replication errors', async () => {
     addSourcesMock()
     addDestinationMock()
     addPipelinesMock()
@@ -281,13 +281,12 @@ describe('DestinationRow', () => {
 
     const { container } = customRender(<DestinationRow destinationId={DESTINATION_ID} />)
 
-    await screen.findByText('Caught up')
-
-    // WarningIcon renders with bg-warning-600 (from packages/ui/src/components/StatusIcon.tsx)
-    expect(container.querySelector('.bg-warning-600')).toBeInTheDocument()
+    expect(await screen.findByText('1 table error')).toBeInTheDocument()
+    // StatusIcon destructive on the logo corner (packages/ui/src/components/StatusIcon.tsx)
+    expect(container.querySelector('.bg-destructive-600')).toBeInTheDocument()
   })
 
-  test('suppresses warning icon when pipeline is stopped even with table errors', async () => {
+  test('suppresses table error signals when pipeline is stopped even with table errors', async () => {
     addSourcesMock()
     addDestinationMock()
     addPipelinesMock()
@@ -308,9 +307,9 @@ describe('DestinationRow', () => {
 
     await screen.findByText('Stopped')
 
-    expect(container.querySelector('.bg-warning-600')).not.toBeInTheDocument()
+    expect(screen.queryByText(/table error/)).not.toBeInTheDocument()
+    expect(container.querySelector('.bg-destructive-600')).not.toBeInTheDocument()
   })
-
   test('shows error when the pipelines API fails', async () => {
     addSourcesMock()
     addDestinationMock()
