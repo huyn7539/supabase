@@ -332,15 +332,15 @@ export const ReplicationPipelineStatus = () => {
                     onChange={(e) => setSearchString(e.target.value)}
                     onKeyDown={onSearchInputEscape(searchString, setSearchString)}
                     actions={
-                      searchString.length > 0 && [
-                        <X
-                          key="close"
-                          className="mx-2 cursor-pointer text-foreground"
-                          size={14}
-                          strokeWidth={1.5}
+                      searchString.length > 0 && (
+                        <Button
+                          aria-label="Clear search"
+                          variant="text"
+                          icon={<X />}
+                          className="p-0 h-5 w-5"
                           onClick={() => setSearchString('')}
-                        />,
-                      ]
+                        />
+                      )
                     }
                   />
                   <div className="flex items-center">

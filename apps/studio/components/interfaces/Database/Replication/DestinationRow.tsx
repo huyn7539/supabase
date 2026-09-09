@@ -144,6 +144,19 @@ export const DestinationRow = ({ destinationId }: DestinationRowProps) => {
     }
   }, [pipeline?.id, statusName, updatePipelineStatus])
 
+  // Five distinct states, so early returns rather than a ternary chain. The row only renders once
+  // a pipeline exists, so there is no "no pipeline" case to handle here.
+  const renderLag = () => {
+    if (isReplicationStatusLoading) return <ShimmeringLoader />
+    if (isReplicationStatusError || !applyLag)
+      return <Minus size={18} className="text-foreground-lighter" />
+    if (isInitialSyncRunning)
+      return <span className="text-foreground-light whitespace-nowrap">Initial sync</span>
+    if (isCaughtUp)
+      return <span className="text-foreground-light whitespace-nowrap">Caught up</span>
+    return <span className="text-foreground whitespace-nowrap">{lag.display}</span>
+  }
+
   return (
     <>
       {isPipelineError && (
@@ -207,21 +220,7 @@ export const DestinationRow = ({ destinationId }: DestinationRowProps) => {
             )}
           </TableCell>
 
-          <TableCell>
-            {!pipeline ? (
-              <Minus size={18} className="text-foreground-lighter" />
-            ) : isReplicationStatusLoading ? (
-              <ShimmeringLoader />
-            ) : isReplicationStatusError || !applyLag ? (
-              <Minus size={18} className="text-foreground-lighter" />
-            ) : isInitialSyncRunning ? (
-              <span className="text-foreground-light whitespace-nowrap">Initial sync</span>
-            ) : isCaughtUp ? (
-              <span className="text-foreground-light whitespace-nowrap">Caught up</span>
-            ) : (
-              <span className="text-foreground whitespace-nowrap">{lag.display}</span>
-            )}
-          </TableCell>
+          <TableCell>{renderLag()}</TableCell>
 
           <TableCell>
             {isPipelineLoading || !pipeline ? (
