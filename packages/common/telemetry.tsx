@@ -20,6 +20,7 @@ import {
   parseFirstReferrerCookie,
   parseMwDiagCookie,
 } from './first-referrer-cookie'
+import { FREEBUFF_TAG_URL } from './freebuff'
 import { ensurePlatformSuffix, isBrowser } from './helpers'
 import { useFirstTouchStore, useParams } from './hooks'
 import {
@@ -59,19 +60,29 @@ export const TelemetryTagManager = () => {
     setIsCookieReady(hasAccepted)
   }, [hasAccepted, syncCookie])
 
-  // Complete cookie setup before loading the script.
+  // Complete cookie setup before loading either script.
   const isGTMEnabled = isGTMConfigured && hasAccepted && isCookieReady
+  // Freebuff's tag reads the bfcid cookie when it loads, so the sync above has
+  // to have run first. It reports conversions, so it stays behind consent.
+  const isFreebuffEnabled = IS_PLATFORM && hasAccepted && isCookieReady
 
-  if (!isGTMEnabled) return null
+  if (!isGTMEnabled && !isFreebuffEnabled) return null
 
   return (
-    <Script
-      id="consent"
-      strategy="afterInteractive"
-      dangerouslySetInnerHTML={{
-        __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;j.src="https://ss.supabase.com/4icgbaujh.js?"+i;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','60a389s=aWQ9R1RNLVdDVlJMTU43&page=2');`,
-      }}
-    />
+    <>
+      {isGTMEnabled && (
+        <Script
+          id="consent"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;j.src="https://ss.supabase.com/4icgbaujh.js?"+i;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','60a389s=aWQ9R1RNLVdDVlJMTU43&page=2');`,
+          }}
+        />
+      )}
+      {isFreebuffEnabled && (
+        <Script id="freebuff-tag" strategy="afterInteractive" src={FREEBUFF_TAG_URL} />
+      )}
+    </>
   )
 }
 

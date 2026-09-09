@@ -64,6 +64,8 @@ const GITHUB_USER_CONTENT_URL = 'https://raw.githubusercontent.com'
 const GITHUB_USER_AVATAR_URL = 'https://avatars.githubusercontent.com'
 const GOOGLE_USER_AVATAR_URL = 'https://lh3.googleusercontent.com'
 
+const FREEBUFF_URL = 'https://freebuff.com'
+
 // This is a custom domain for Stape, which isused for GTM servers
 const STAPE_URL = 'https://ss.supabase.com'
 
@@ -108,6 +110,7 @@ export function getCSP() {
     STAPE_URL,
     GOOGLE_MAPS_API_URL,
     POSTHOG_URL,
+    FREEBUFF_URL,
     ...(!!NIMBUS_PROD_PROJECTS_URL ? [NIMBUS_PROD_PROJECTS_URL, NIMBUS_PROD_PROJECTS_URL_WS] : []),
     CLOUDFLARE_CDN_URL,
   ]
@@ -119,6 +122,7 @@ export function getCSP() {
     STAPE_URL,
     POSTHOG_URL,
     USERCENTRICS_URLS,
+    FREEBUFF_URL,
   ]
   const FRAME_SRC_URLS = [
     HCAPTCHA_ASSET_URL,

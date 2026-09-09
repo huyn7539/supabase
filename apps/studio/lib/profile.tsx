@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
-import { useIsLoggedIn, useUser } from 'common'
+import { trackFreebuffConversion, useIsLoggedIn, useUser } from 'common'
 import { useRouter } from 'next/router'
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
@@ -49,6 +49,10 @@ export const ProfileProvider = ({ children }: PropsWithChildren<{}>) => {
           event: 'sign_up',
           email: user.email,
         })
+
+        // The user id is the idempotency key. The server-side postback has to
+        // send the same one for Freebuff to dedupe the two reports into one.
+        trackFreebuffConversion('signup_completed', user.id)
       }
     },
     onError: (error) => {
