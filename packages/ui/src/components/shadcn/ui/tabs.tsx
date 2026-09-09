@@ -70,6 +70,11 @@ const TabsTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       'inline-flex cursor-pointer items-center justify-center whitespace-nowrap py-1.5 text-sm transition-colors focus-ring disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-foreground data-[state=active]:shadow-xs text-foreground-lighter hover:text-foreground',
+      'relative data-[state=active]:after:absolute data-[state=active]:after:bottom-0',
+      'data-[state=active]:after:left-[var(--tab-pad-start,var(--tab-pad,0px))]',
+      'data-[state=active]:after:right-[var(--tab-pad,0px)]',
+      'data-[state=active]:after:h-px data-[state=active]:after:bg-foreground',
+      'group-data-[tab-indicator-ready]/list:after:hidden',
       'group',
       className
     )}

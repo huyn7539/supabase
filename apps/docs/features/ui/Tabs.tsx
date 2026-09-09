@@ -65,11 +65,11 @@ export const tabsTriggerListVariants = cva(
         'rounded-pills': 'shadow-xs rounded-full',
       },
       size: {
-        tiny: 'text-xs px-2.5 py-1',
-        small: 'text-base md:text-sm leading-4 px-3 py-2',
-        medium: 'text-base md:text-sm px-4 py-2',
-        large: 'text-base px-4 py-2',
-        xlarge: 'text-base px-6 py-3',
+        tiny: 'text-xs px-2.5 py-1 [--tab-pad:--spacing(2.5)]',
+        small: 'text-base md:text-sm leading-4 px-3 py-2 [--tab-pad:--spacing(3)]',
+        medium: 'text-base md:text-sm px-4 py-2 [--tab-pad:--spacing(4)]',
+        large: 'text-base px-4 py-2 [--tab-pad:--spacing(4)]',
+        xlarge: 'text-base px-6 py-3 [--tab-pad:--spacing(6)]',
       },
       block: {
         true: 'w-full flex items-center justify-center',
@@ -95,7 +95,7 @@ export const tabsTriggerListVariants = cva(
         isActive: true,
         className: '!text-foreground',
       },
-      { type: 'underlined', className: 'py-3 first:ps-0' },
+      { type: 'underlined', className: 'py-3 first:ps-0 first:[--tab-pad-start:0px]' },
       {
         type: 'rounded-pills',
         isActive: true,
