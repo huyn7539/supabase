@@ -337,6 +337,30 @@ describe('applyPriorDecisionToSDK', () => {
     consentState.categories = null
     consentState.showConsentToast = false
     consentState.hasConsented = false
+    document.cookie = 'bfcid=; Max-Age=0; Path=/'
+  })
+
+  it('clears the bfcid cookie immediately on an explicit denial', () => {
+    const UC = makeMockUC({ areAllAccepted: true })
+    applyPriorDecisionToSDK(UC as never, { initialLayer: 1 }, null)
+    document.cookie = 'bfcid=bfc_test_1.opaque.signature; Path=/'
+
+    consentState.denyAll()
+
+    expect(UC.denyAllServices).toHaveBeenCalledOnce()
+    expect(document.cookie).not.toContain('bfcid=')
+  })
+
+  it('clears the bfcid cookie when a service-level update withdraws consent', async () => {
+    const UC = makeMockUC({ areAllAccepted: true })
+    applyPriorDecisionToSDK(UC as never, { initialLayer: 1 }, null)
+    document.cookie = 'bfcid=bfc_test_1.opaque.signature; Path=/'
+    UC.areAllConsentsAccepted.mockReturnValue(false)
+
+    consentState.updateServices([{ serviceId: 'tracking', status: false }])
+
+    await vi.waitFor(() => expect(consentState.hasConsented).toBe(false))
+    expect(document.cookie).not.toContain('bfcid=')
   })
 
   it('uniform-accept: calls acceptAllServices, sets hasConsented, suppresses banner', () => {

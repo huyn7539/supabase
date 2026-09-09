@@ -2,6 +2,7 @@ import type Usercentrics from '@usercentrics/cmp-browser-sdk'
 import type { BaseCategory, UserDecision } from '@usercentrics/cmp-browser-sdk'
 import { proxy, ref, snapshot, useSnapshot } from 'valtio'
 
+import { clearConsentedUrlCookie } from './consented-url-cookie'
 import { IS_PLATFORM, LOCAL_STORAGE_KEYS } from './constants'
 
 export type PriorConsentDecision =
@@ -155,6 +156,7 @@ export const consentState = proxy({
 
     consentState.hasConsented = false
     consentState.showConsentToast = false
+    clearConsentedUrlCookie()
 
     consentState.UC.denyAllServices()
       .then(() => {
@@ -173,6 +175,7 @@ export const consentState = proxy({
       .then(() => {
         consentState.hasConsented = consentState.UC?.areAllConsentsAccepted() ?? false
         consentState.categories = consentState.UC?.getCategoriesBaseInfo() ?? null
+        if (!consentState.hasConsented) clearConsentedUrlCookie()
       })
       .catch(() => {
         consentState.showConsentToast = true
