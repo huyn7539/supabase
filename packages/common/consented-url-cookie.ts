@@ -1,3 +1,5 @@
+import { getTelemetryCookieOptions } from './telemetry-utils'
+
 const COOKIE_NAME = 'bfcid'
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30
 
@@ -20,10 +22,7 @@ function getParameterValue(url: string): string | null {
 }
 
 function getCookieOptions(): string {
-  const { hostname, protocol } = window.location
-  const isSupabaseDomain = hostname === 'supabase.com' || hostname.endsWith('.supabase.com')
-
-  return `Path=/; SameSite=Lax${isSupabaseDomain ? '; Domain=supabase.com' : ''}${protocol === 'https:' ? '; Secure' : ''}`
+  return `${getTelemetryCookieOptions()}${window.location.protocol === 'https:' ? '; Secure' : ''}`
 }
 
 export function clearConsentedUrlCookie(): void {

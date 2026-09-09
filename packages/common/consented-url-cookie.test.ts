@@ -4,6 +4,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { clearConsentedUrlCookie, createConsentedUrlCookieSync } from './consented-url-cookie'
 
+vi.hoisted(() => {
+  vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', 'production')
+  // The shared browser helpers also read this API during module initialization.
+  window.matchMedia = vi.fn().mockReturnValue({ matches: false })
+})
+
 const COOKIE_VALUE = 'bfc_test_1.Opaque_Value.signature'
 const SECOND_COOKIE_VALUE = 'bfc_test_1.Second_Value.signature'
 
@@ -149,6 +155,24 @@ describe('consented URL cookie', () => {
       expect(page.cookieJar.getCookieStringSync('https://subdomain.supabase.com/')).toBe('')
     }
   )
+
+  it('follows the shared host-only policy for preview deployments on a Supabase subdomain', async () => {
+    const page = openPage(`https://preview.supabase.com/?bfcid=${COOKIE_VALUE}`)
+    vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', 'preview')
+    vi.resetModules()
+
+    try {
+      const { createConsentedUrlCookieSync: createPreviewCookieSync } =
+        await import('./consented-url-cookie')
+      createPreviewCookieSync()(true)
+
+      expect(document.cookie).toBe(`bfcid=${COOKIE_VALUE}`)
+      expect(page.cookieJar.getCookiesSync('https://preview.supabase.com/')[0].hostOnly).toBe(true)
+      expect(page.cookieJar.getCookieStringSync('https://subdomain.supabase.com/')).toBe('')
+    } finally {
+      vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', 'production')
+    }
+  })
 
   it('does not throw during cookie setup or consent changes when storage is blocked', () => {
     openPage()

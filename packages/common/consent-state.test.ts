@@ -4,6 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { applyPriorDecisionToSDK, consentState, detectPriorConsent } from './consent-state'
 
+vi.hoisted(() => {
+  window.matchMedia = vi.fn().mockReturnValue({ matches: false })
+})
+
 // jsdom's localStorage can be flaky in vitest, so ensure it's available
 const storage = new Map<string, string>()
 const mockLocalStorage = {
