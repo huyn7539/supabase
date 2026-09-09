@@ -348,9 +348,9 @@ export const Destinations = () => {
           <AlertError error={destinationsError} subject="Failed to retrieve pipelines" />
         )}
 
-        {isDestinationsLoading ? (
-          <GenericSkeletonLoader />
-        ) : hasDestinations ? (
+        {isDestinationsLoading && <GenericSkeletonLoader />}
+
+        {!isDestinationsLoading && hasDestinations && (
           <Card>
             <CardContent className="p-0">
               <Table>
@@ -394,7 +394,7 @@ export const Destinations = () => {
                         <TableCell colSpan={6}>
                           <p>No results found</p>
                           <p className="text-foreground-light">
-                            Your search for "{filterString}" did not return any results.
+                            Your search for “{filterString}” did not return any results.
                           </p>
                         </TableCell>
                       </TableRow>
@@ -403,24 +403,23 @@ export const Destinations = () => {
               </Table>
             </CardContent>
           </Card>
-        ) : (
-          !isDestinationsLoading &&
-          !hasErrorsFetchingData && (
-            <EmptyStatePresentational
-              icon={Workflow}
-              title="Add a pipeline"
-              description="Send tables to an external destination for analytics workloads."
+        )}
+
+        {!isDestinationsLoading && !hasDestinations && !hasErrorsFetchingData && (
+          <EmptyStatePresentational
+            icon={Workflow}
+            title="Add a pipeline"
+            description="Send tables to an external destination for analytics workloads."
+          >
+            <Button
+              variant="default"
+              icon={<Plus />}
+              disabled={!newDestinationDefaultType}
+              onClick={openDestinationPanel}
             >
-              <Button
-                variant="default"
-                icon={<Plus />}
-                disabled={!newDestinationDefaultType}
-                onClick={openDestinationPanel}
-              >
-                Add pipeline
-              </Button>
-            </EmptyStatePresentational>
-          )
+              Add pipeline
+            </Button>
+          </EmptyStatePresentational>
         )}
       </div>
 

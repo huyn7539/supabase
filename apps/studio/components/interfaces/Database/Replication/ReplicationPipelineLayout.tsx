@@ -12,7 +12,7 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { parseAsInteger, useQueryState } from 'nuqs'
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { PropsWithChildren, useEffect, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import {
   BreadcrumbItem,
@@ -68,6 +68,14 @@ import { type ResponseError } from '@/types'
 
 type LifecycleAction = 'start' | 'stop' | 'restart'
 
+const LIFECYCLE_BY_STATUS: Partial<
+  Record<PipelineStatusName, { label: string; action: LifecycleAction; icon: ReactNode }>
+> = {
+  [PipelineStatusName.STOPPED]: { label: 'Start', action: 'start', icon: <Play /> },
+  [PipelineStatusName.STARTED]: { label: 'Stop', action: 'stop', icon: <CircleStop /> },
+  [PipelineStatusName.FAILED]: { label: 'Restart', action: 'restart', icon: <RotateCcw /> },
+}
+
 export const ReplicationPipelineLayout = ({ children }: PropsWithChildren) => {
   const { ref: projectRef, pipelineId: pipelineIdParam } = useParams()
   const pipelineId = Number(pipelineIdParam)
@@ -120,34 +128,17 @@ export const ReplicationPipelineLayout = ({ children }: PropsWithChildren) => {
   const isTransitioning = requestStatus !== PipelineStatusRequestStatus.None
   const isActionable = PIPELINE_ACTIONABLE_STATES.includes(statusName as PipelineStatusName)
 
+  // What the primary button offers for each state it can act on. Anything not listed here (a
+  // pipeline mid-transition, or one in an unknown state) has no action, so the button falls back
+  // to the display state's own label and renders no icon.
+  const lifecycle = LIFECYCLE_BY_STATUS[statusName as PipelineStatusName]
+  const primaryAction: LifecycleAction | undefined = lifecycle?.action
   const lifecycleLabel = isTransitioning
     ? displayState.label
-    : statusName === PipelineStatusName.STOPPED
-      ? 'Start'
-      : statusName === PipelineStatusName.STARTED
-        ? 'Stop'
-        : statusName === PipelineStatusName.FAILED
-          ? 'Restart'
-          : displayState.label
-
-  // No icon while Starting/Stopping/Restarting: the button's loading state carries that.
-  const lifecycleIcon =
-    statusName === PipelineStatusName.STOPPED ? (
-      <Play />
-    ) : statusName === PipelineStatusName.STARTED ? (
-      <CircleStop />
-    ) : statusName === PipelineStatusName.FAILED ? (
-      <RotateCcw />
-    ) : undefined
-
-  const primaryAction: LifecycleAction | undefined =
-    statusName === PipelineStatusName.STOPPED
-      ? 'start'
-      : statusName === PipelineStatusName.STARTED
-        ? 'stop'
-        : statusName === PipelineStatusName.FAILED
-          ? 'restart'
-          : undefined
+    : (lifecycle?.label ?? displayState.label)
+  // No icon while Starting/Stopping/Restarting: those states have no entry above, and the
+  // button's loading state carries the transition anyway.
+  const lifecycleIcon = lifecycle?.icon
 
   // The overflow menu carries the lifecycle actions the primary button isn't already offering,
   // so the detail page has the same reach as the row menu on the list without repeating itself.
@@ -285,7 +276,6 @@ export const ReplicationPipelineLayout = ({ children }: PropsWithChildren) => {
                     !hasUpdate && statusName === PipelineStatusName.STOPPED ? 'primary' : 'default'
                   }
                   icon={lifecycleIcon}
-                  className="capitalize"
                   onClick={() => onLifecycleAction()}
                   loading={
                     Boolean(pipelineError) ||

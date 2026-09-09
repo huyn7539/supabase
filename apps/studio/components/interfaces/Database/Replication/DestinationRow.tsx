@@ -256,6 +256,9 @@ export const DestinationRow = ({ destinationId }: DestinationRowProps) => {
                 className="text-foreground-lighter"
                 aria-hidden
               />
+              <button tabIndex={-1} className="sr-only">
+                Go to pipeline details
+              </button>
             </div>
           </TableCell>
         </TableRow>

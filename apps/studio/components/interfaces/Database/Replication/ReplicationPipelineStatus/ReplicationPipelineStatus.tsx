@@ -422,7 +422,7 @@ export const ReplicationPipelineStatus = () => {
                         <tr className="sr-only" aria-live="polite" role="status">
                           <td colSpan={4}>
                             {filteredTableStatuses.length === 0 && searchString.length > 0
-                              ? `No results found for "${searchString}"`
+                              ? `No results found for “${searchString}”`
                               : ''}
                           </td>
                         </tr>
@@ -431,7 +431,7 @@ export const ReplicationPipelineStatus = () => {
                             <TableCell colSpan={4}>
                               <p className="text-sm text-foreground">No results found</p>
                               <p className="text-sm text-foreground-lighter">
-                                Your search for "{searchString}" did not return any results.
+                                Your search for “{searchString}” did not return any results.
                               </p>
                             </TableCell>
                           </TableRow>
