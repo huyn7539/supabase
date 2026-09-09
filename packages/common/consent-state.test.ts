@@ -367,6 +367,67 @@ describe('applyPriorDecisionToSDK', () => {
     expect(document.cookie).not.toContain('bfcid=')
   })
 
+  it('clears the bfcid cookie when the ruleset gains an uncovered service', () => {
+    const UC = makeMockUC({
+      services: [
+        { id: 'tracking1', isEssential: false },
+        { id: 'tracking_new', isEssential: false },
+      ],
+    })
+    document.cookie = 'bfcid=bfc_test_1.opaque.signature; Path=/'
+
+    applyPriorDecisionToSDK(
+      UC as never,
+      { initialLayer: 0 },
+      {
+        kind: 'decisions',
+        decisions: [{ serviceId: 'tracking1', status: true }],
+      }
+    )
+
+    expect(consentState.showConsentToast).toBe(true)
+    expect(document.cookie).not.toContain('bfcid=')
+  })
+
+  it('clears the bfcid cookie when a restored decision resolves to no consent', async () => {
+    const UC = makeMockUC({
+      services: [{ id: 'tracking1', isEssential: false }],
+      areAllAccepted: false,
+    })
+    document.cookie = 'bfcid=bfc_test_1.opaque.signature; Path=/'
+
+    applyPriorDecisionToSDK(
+      UC as never,
+      { initialLayer: 0 },
+      {
+        kind: 'decisions',
+        decisions: [{ serviceId: 'tracking1', status: false }],
+      }
+    )
+
+    await vi.waitFor(() => expect(document.cookie).not.toContain('bfcid='))
+  })
+
+  it('clears the bfcid cookie when init resolves with no prior decision', () => {
+    const UC = makeMockUC()
+    document.cookie = 'bfcid=bfc_test_1.opaque.signature; Path=/'
+
+    applyPriorDecisionToSDK(UC as never, { initialLayer: 0 }, null)
+
+    expect(consentState.hasConsented).toBe(false)
+    expect(document.cookie).not.toContain('bfcid=')
+  })
+
+  it('keeps the bfcid cookie when a prior uniform accept is restored', () => {
+    const UC = makeMockUC({ areAllAccepted: true })
+    document.cookie = 'bfcid=bfc_test_1.opaque.signature; Path=/'
+
+    applyPriorDecisionToSDK(UC as never, { initialLayer: 0 }, { kind: 'uniform-accept' })
+
+    expect(consentState.hasConsented).toBe(true)
+    expect(document.cookie).toContain('bfcid=')
+  })
+
   it('uniform-accept: calls acceptAllServices, sets hasConsented, suppresses banner', () => {
     const UC = makeMockUC()
     applyPriorDecisionToSDK(UC as never, { initialLayer: 0 }, { kind: 'uniform-accept' })

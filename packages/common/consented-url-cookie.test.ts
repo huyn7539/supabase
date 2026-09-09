@@ -22,6 +22,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
   jsdom.cookieJar.removeAllCookiesSync()
+  sessionStorage.clear()
 })
 
 describe('consented URL cookie', () => {
@@ -39,6 +40,45 @@ describe('consented URL cookie', () => {
     expect(page.cookieJar.getCookieStringSync('https://subdomain.supabase.com/endpoint')).toBe(
       `bfcid=${COOKIE_VALUE}`
     )
+  })
+
+  it('recovers the parameter after a page load that happened before consent', () => {
+    openPage()
+    createConsentedUrlCookieSync()(false)
+    expect(document.cookie).toBe('')
+
+    // A new page load builds a fresh closure and the URL no longer carries the parameter.
+    jsdom.reconfigure({ url: 'https://supabase.com/pricing' })
+    const afterNavigation = createConsentedUrlCookieSync()
+    afterNavigation(false)
+    afterNavigation(true)
+
+    expect(document.cookie).toBe(`bfcid=${COOKIE_VALUE}`)
+  })
+
+  it('drops the retained parameter once consent is denied', () => {
+    openPage()
+    createConsentedUrlCookieSync()(false)
+
+    clearConsentedUrlCookie()
+
+    jsdom.reconfigure({ url: 'https://supabase.com/pricing' })
+    createConsentedUrlCookieSync()(true)
+    expect(document.cookie).toBe('')
+  })
+
+  it('does not throw when session storage is blocked', () => {
+    openPage()
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('Storage access blocked')
+    })
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('Storage access blocked')
+    })
+
+    const sync = createConsentedUrlCookieSync()
+    expect(() => sync(false)).not.toThrow()
+    expect(() => sync(true)).not.toThrow()
   })
 
   it('makes the unchanged cookie value available across subdomains and paths', () => {

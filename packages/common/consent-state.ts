@@ -221,6 +221,7 @@ export function applyPriorDecisionToSDK(
         .catch(() => {
           consentState.hasConsented = false
           consentState.showConsentToast = true
+          clearConsentedUrlCookie()
         })
       return
     }
@@ -242,6 +243,7 @@ export function applyPriorDecisionToSDK(
       // so the default-branch state assignments take effect correctly.
       consentState.showConsentToast = initialUIValues.initialLayer === 0
       consentState.hasConsented = hasConsented
+      if (!hasConsented) clearConsentedUrlCookie()
       return
     }
 
@@ -253,11 +255,13 @@ export function applyPriorDecisionToSDK(
       .then(() => {
         consentState.hasConsented = UC.areAllConsentsAccepted()
         consentState.categories = UC.getCategoriesBaseInfo()
+        if (!consentState.hasConsented) clearConsentedUrlCookie()
       })
       .catch(() => {
         // Falling back to the banner is safer than silently flipping to a
         // uniform state the user didn't choose.
         consentState.showConsentToast = true
+        clearConsentedUrlCookie()
       })
     return
   }
@@ -271,7 +275,12 @@ export function applyPriorDecisionToSDK(
   if (!hasConsented && localStorage?.getItem(LOCAL_STORAGE_KEYS.TELEMETRY_CONSENT) === 'true') {
     consentState.acceptAll()
     localStorage.removeItem(LOCAL_STORAGE_KEYS.TELEMETRY_CONSENT)
+    return
   }
+
+  // A stored click id must not outlive the consent that permitted it, so any
+  // init that resolves to no consent drops it.
+  if (!consentState.hasConsented) clearConsentedUrlCookie()
 }
 
 async function initUserCentrics() {

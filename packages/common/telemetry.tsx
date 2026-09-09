@@ -52,12 +52,12 @@ export const TelemetryTagManager = () => {
 
   const isGTMConfigured = Boolean(IS_PLATFORM && process.env.NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID)
 
+  // Attribution capture is independent of GTM, so this runs even when the
+  // container is not configured.
   useEffect(() => {
-    if (!isGTMConfigured) return
-
     syncCookie(hasAccepted)
     setIsCookieReady(hasAccepted)
-  }, [hasAccepted, isGTMConfigured, syncCookie])
+  }, [hasAccepted, syncCookie])
 
   // Complete cookie setup before loading the script.
   const isGTMEnabled = isGTMConfigured && hasAccepted && isCookieReady
