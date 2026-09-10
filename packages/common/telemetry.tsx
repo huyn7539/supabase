@@ -117,6 +117,7 @@ function getFirstTouchAttributionProps(telemetryData: SharedTelemetryData) {
       ...(getParam('ttclid') && { ttclid: getParam('ttclid') }), // TikTok Ads
       ...(getParam('twclid') && { twclid: getParam('twclid') }), // X Ads (Twitter)
       ...(getParam('li_fat_id') && { li_fat_id: getParam('li_fat_id') }), // LinkedIn Ads
+      ...(getParam('bfcid') && { bfcid: getParam('bfcid') }), // Freebuff Ads
     }
 
     return {
